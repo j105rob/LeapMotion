@@ -43,6 +43,53 @@
 		<script src="js/stats.min.js"></script>
 
 		<script defer='defer'>
+			var vec3 = { };
+			vec3.subtract = function(a, b, result) {
+
+				result[0] = a[0] - b[0];
+				result[1] = a[1] - b[1];
+				result[2] = a[2] - b[2];
+
+			}
+			vec3.multiply = function(a, n, result) {
+
+				result[0] = a[0] * n;
+				result[1] = a[1] * n;
+				result[2] = a[2] * n;
+
+			}
+
+			vec3.divide = function(a, n, result) {
+
+				// Prevent division by zero errors..
+				if (n == 0) {
+
+					console.log('Attempting to divide vec3 by zero');
+					return;
+
+				}
+
+				var inv_n = 1 / n;
+
+				vec3.multiply(a, inv_n, result);
+			}
+
+			vec3.magnitude = function(a) {
+
+				return Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+
+			}
+			vec3.create = function(x, y, z) {
+
+				var a = new Float32Array(3);
+
+				a[0] = x || 0;
+				a[1] = y || 0;
+				a[2] = z || 0;
+
+				return a;
+
+			}
 			var angularSpeed = 0.2;
 			var lastTime = 0;
 			if (!Detector.webgl)
@@ -64,7 +111,7 @@
 				document.body.appendChild(container);
 
 				renderer = new THREE.WebGLRenderer();
-				//renderer = new THREE.CanvasRenderer();
+
 				renderer.setSize(window.innerWidth, window.innerHeight);
 				container.appendChild(renderer.domElement);
 
@@ -74,29 +121,50 @@
 				scene = new THREE.Scene();
 				scene.fog = new THREE.FogExp2(0x000000, 0.0007);
 
-				parameters = [[[1, 1, 0.5], 5], [[0.95, 1, 0.5], 4], [[0.90, 1, 0.5], 3], [[0.85, 1, 0.5], 2], [[0.80, 1, 0.5], 1]];
-
-				material = new THREE.MeshPhongMaterial({
+				var material = new THREE.MeshPhongMaterial({
 					map : THREE.ImageUtils.loadTexture("/leap/images/moon.jpg")
 				});
-				
-								material2 = new THREE.MeshPhongMaterial({
+
+				var material2 = new THREE.MeshPhongMaterial({
 					map : THREE.ImageUtils.loadTexture("/leap/images/moon2.jpg")
 				});
-				
-				
-				// cube
+				var material3 = new THREE.MeshPhongMaterial({
+					map : THREE.ImageUtils.loadTexture("/leap/images/ds2.jpg")
+				});
+
+				// Node
 				cube = new THREE.Mesh(new THREE.SphereGeometry(150, 64, 32), material);
 				cube.overdraw = true;
 				cube.rotation.y = Math.PI * 0.1;
-				cube.position.set(0,0,100);
+				cube.position.set(-300, -300, 100);
 				scene.add(cube);
-				
+
+				// Node
 				cube2 = new THREE.Mesh(new THREE.SphereGeometry(150, 64, 32), material2);
 				cube2.overdraw = true;
 				cube2.rotation.y = Math.PI * 0.3;
-				cube2.position.set(300,300,0);
+				cube2.position.set(300, 300, 0);
 				scene.add(cube2);
+
+				// Parrticle
+				particle = new THREE.Mesh(new THREE.SphereGeometry(10, 64, 32), material3);
+				particle.overdraw = true;
+				particle.rotation.y = Math.PI * 0.3;
+				particle.position.set(-300, -300, 100);
+				scene.add(particle);
+
+				// Edge
+				/*
+				var lineMat = new THREE.LineBasicMaterial({
+					color : 0xFF00FF,
+					linewidth : 3
+				});
+				var lineGeom = new THREE.Geometry();
+				lineGeom.vertices.push(cube.position);
+				lineGeom.vertices.push(cube2.position);
+				line = new THREE.Line(lineGeom, lineMat);
+				scene.add(line);
+				*/
 
 				// add subtle ambient lighting
 				var ambientLight = new THREE.AmbientLight(0xcccccc);
@@ -106,38 +174,6 @@
 				var directionalLight = new THREE.DirectionalLight(0xffffff);
 				directionalLight.position.set(1, 1, 1).normalize();
 				scene.add(directionalLight);
-
-				/*
-				 var points = new THREE.Geometry();
-				 points.vertices.push(new THREE.Vector3(0, 0, 450));
-				 points.vertices.push(new THREE.Vector3(200, 0, 250));
-				 points.vertices.push(new THREE.Vector3(-200, 0, 250));
-				 var monsters = new THREE.ParticleSystem(points, wrapper);
-				 scene.add(monsters);
-
-				 for ( i = 0; i < parameters.length; i++) {
-
-				 color = parameters[i][0];
-				 size = parameters[i][1];
-
-				 materials[i] = new THREE.ParticleBasicMaterial({
-				 size : size
-				 //color: 0xFFFFFF,
-				 //map : map,
-				 //blending : THREE.AdditiveBlending,
-				 //transparent : true
-				 });
-
-				 particles = new THREE.ParticleSystem(geometry, materials[i]);
-
-				 particles.rotation.x = Math.random() * 6;
-				 particles.rotation.y = Math.random() * 6;
-				 particles.rotation.z = Math.random() * 6;
-
-				 scene.add(particles);
-
-				 }
-				 */
 
 				stats = new Stats();
 				stats.domElement.style.position = 'absolute';
@@ -170,6 +206,10 @@
 
 				mouseX = event.clientX - windowHalfX;
 				mouseY = event.clientY - windowHalfY;
+
+				//var part = particles.vertices[0];
+				//console.log(part);
+				//console.log(cube.position,cube2.position);
 
 			}
 
@@ -217,6 +257,7 @@
 
 			function render() {
 				//console.log("render called");
+
 				var time = Date.now() * 0.00005;
 
 				camera.position.x += (mouseX - camera.position.x ) * 0.05;
@@ -244,6 +285,59 @@
 					//materials[i].color.setHSL(h, color[1], color[2]);
 
 				}
+
+				//console.log(particles.vertices[0].distanceTo(cube2.position));
+				//console.log("before",particles.vertices[0]);
+				// Calculate distance from the current particle position to the source position
+				//var dstPartToSrc = particles.vertices[0].distanceTo(cube.position);
+
+				// Calculate distance from the current particle position to the source position
+				var difference = vec3.create();
+				var direction = vec3.create();
+				vec3.subtract([particle.position.x, particle.position.y, particle.position.x], [cube.position.x, cube.position.y, cube.position.z], difference);
+				var distance_from_source_to_particle = vec3.magnitude(difference);
+
+				// Calculate distance from the source position to the destination position
+				vec3.subtract([cube2.position.x, cube2.position.y, cube2.position.z], [cube.position.x, cube.position.y, cube.position.z], difference);
+				var distance_from_source_to_dest = vec3.magnitude(difference);
+
+				vec3.divide(difference, distance_from_source_to_dest, direction);
+				if (distance_from_source_to_particle >= distance_from_source_to_dest) {
+
+					particle.position.x = cube.position.x;
+					particle.position.y = cube.position.y;
+					particle.position.z = cube.position.z;
+
+					//vec3.copy( particle.source_position, particle.position );
+
+				} else {
+					particle.position.x = (particle.position.x + direction[0]*2);
+					particle.position.y = (particle.position.y + direction[1]*2);
+					particle.position.z = (particle.position.z + direction[2]*2);
+					//console.log("after", particles.vertices[0]);
+				}
+				/*
+				var dstPartToDst = particle.position.distanceTo(cube2.position);
+				var dstPartToSrc = particle.position.distanceTo(cube.position);
+				var dstSrcToDst = cube.position.distanceTo(cube2.position);
+				var max = cube.position.distanceTo(cube2.position);
+
+				if (dstPartToSrc>=dstSrcToDst) {
+				particle.position.x = cube.position.x;
+				particle.position.y = cube.position.y;
+				particle.position.z = cube.position.z;
+				}else {
+				//particle.position.x = particle.position.x + dstPartToDst / 1000;
+				particle.position.x = (particle.position.x + 6 * dstPartToSrc + 6)/1000;
+				//particle.position.y = particle.position.y + dstPartToDst / 1000;
+				particle.position.y = (particle.position.y + 6 * dstPartToSrc + 6)/1000;
+				//particle.position.z = particle.position.z + dstPartToDst / 1000;
+				particle.position.z = (particle.position.z + 1 * dstPartToSrc + 1)/1000;
+				}
+				*/
+				//console.log("after", particles.vertices[0]);
+				// flag the particles as dirty
+				//particleSystem.geometry.__dirtyVertices = true;
 
 				renderer.render(scene, camera);
 

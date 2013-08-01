@@ -4364,7 +4364,8 @@ ParticleSystem.prototype = {
 					
 					// Calculate distance from the source position to the destination position			
 					vec3.subtract( particle.dest_position, particle.source_position, difference );
-					distance_from_source_to_dest = vec3.magnitude( difference );			
+					distance_from_source_to_dest = vec3.magnitude( difference );	
+							
 					vec3.divide( difference, distance_from_source_to_dest, direction );
 									
 					// If the particle has traveled ti the destination position, remove it from the particle system				
