@@ -256,12 +256,11 @@
 			}
 
 			function render() {
-				//console.log("render called");
 
 				var time = Date.now() * 0.00005;
 
-				camera.position.x += (mouseX - camera.position.x ) * 0.05;
-				camera.position.y += (-mouseY - camera.position.y ) * 0.05;
+				camera.position.x += (mouseX - camera.position.x ) * .05;
+				camera.position.y += (-mouseY - camera.position.y ) * .05;
 
 				camera.lookAt(scene.position);
 
